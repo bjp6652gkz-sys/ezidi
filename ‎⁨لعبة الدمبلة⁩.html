@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>لعبة الدمبلة</title>
+<style>
+:root{--bg:#fff7e8;--card:#ffffff;--ink:#2a1f3d;--mut:#8a7da0;--line:#eadfcf;--cell:#f4ecdd;--p1:#7c3aed;--p2:#ec4899;--acc:#f97316;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1230;--card:#271a45;--ink:#fdf6ff;--mut:#b7a6d6;--line:#3d2d66;--cell:#33245a}}
+:root[data-theme="dark"]{--bg:#1a1230;--card:#271a45;--ink:#fdf6ff;--mut:#b7a6d6;--line:#3d2d66;--cell:#33245a}
+*{box-sizing:border-box}
+html,body{margin:0;touch-action:manipulation;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;padding:14px;max-width:780px;margin-inline:auto}
+h1{font-size:26px;margin:6px 0 14px;text-align:center;padding-inline:52px;background:linear-gradient(90deg,#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#a855f7,#ec4899);-webkit-background-clip:text;background-clip:text;color:transparent}
+.box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:14px;box-shadow:0 4px 14px rgba(124,58,237,.10)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input{flex:1;min-width:140px;padding:12px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);font-size:16px;font-family:inherit}
+input:focus{outline:none;border-color:var(--p1)}
+button{padding:12px 18px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 3px 8px rgba(124,58,237,.3)}
+button.sec{background:var(--cell);color:var(--ink);box-shadow:none}
+button.x{background:transparent;color:#ef4444;padding:4px 8px;box-shadow:none;font-size:14px}
+button:disabled{opacity:.45}
+.hint{color:var(--mut);font-size:14px;text-align:center;margin:8px 0}
+.seg{display:flex;gap:8px}.seg button{flex:1;background:var(--cell);color:var(--ink);box-shadow:none}.seg button.on{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff}
+.lbl{font-weight:700;color:var(--p1);margin:2px 0 6px}
+.menuBtn{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;z-index:5;width:44px;height:44px;padding:0;font-size:22px;border-radius:50%}
+.scrim{position:fixed;inset:0;background:rgba(20,10,40,.5);display:none;z-index:7}
+.menuBtn.l{right:auto;left:12px}
+.bd{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:12px;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.drawer.left{right:auto;left:0;transform:translateX(-105%);box-shadow:6px 0 24px rgba(0,0,0,.3);width:min(92vw,380px)}
+.drawer.left.open{transform:none}
+.scrim.show{display:block}
+.drawer{position:fixed;top:0;bottom:0;right:0;width:min(86vw,330px);background:var(--card);z-index:8;transform:translateX(105%);transition:transform .25s;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px 16px;overflow-y:auto;box-shadow:-6px 0 24px rgba(0,0,0,.3)}
+.drawer.open{transform:none}
+.drawer h3{margin:0 0 12px;font-size:20px}
+.drawer .sec-t{font-weight:700;margin:14px 0 6px}
+.drawer .full{width:100%;margin-top:10px}
+.stage{text-align:center;background:radial-gradient(circle at 50% 0%,rgba(236,72,153,.18),transparent 70%),var(--card)}
+.ball{--h:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;position:relative;color:#2a1f3d;
+background:radial-gradient(circle at 32% 26%,hsl(var(--h) 95% 78%),hsl(var(--h) 85% 52%) 55%,hsl(var(--h) 85% 32%));box-shadow:0 5px 10px rgba(0,0,0,.25),inset 0 -4px 8px rgba(0,0,0,.2)}
+.ball i{font-style:normal;width:58%;height:58%;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 3px rgba(0,0,0,.25);position:relative;z-index:1}
+.ball::after{content:"";position:absolute;top:8%;left:20%;width:26%;height:16%;border-radius:50%;background:rgba(255,255,255,.65);transform:rotate(-30deg)}
+.ball.empty{background:radial-gradient(circle at 32% 26%,#d9cfef,#9b8cc0 60%,#6d5c99);color:#fff}
+.big{width:150px;height:150px;margin:4px auto 10px;font-size:50px}
+.big.pop{animation:pop .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{0%{transform:scale(.2) rotate(-200deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+.recent{display:flex;justify-content:center;gap:8px;margin:6px 0 10px;direction:ltr;min-height:0}
+.recent .ball{width:42px;height:42px;font-size:15px}
+.board{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;direction:ltr}
+.board .ball{aspect-ratio:1;font-size:clamp(10px,2.8vw,15px);box-shadow:none;background:var(--cell);color:var(--mut);font-weight:600}
+.board .ball::after{display:none}
+.board .ball.on{color:#2a1f3d;background:radial-gradient(circle at 32% 26%,hsl(var(--h) 95% 78%),hsl(var(--h) 85% 52%) 60%,hsl(var(--h) 85% 36%));box-shadow:0 2px 4px rgba(0,0,0,.25)}
+.msg{background:linear-gradient(90deg,rgba(124,58,237,.15),rgba(236,72,153,.15));border-radius:12px;padding:10px;margin-top:8px;font-weight:700;text-align:center}
+.set{--c1:#7c3aed;--c2:#ec4899;border-radius:16px;margin-bottom:12px;overflow:hidden;background:var(--card);border:2px solid var(--c1)}
+.set.win{box-shadow:0 0 0 4px #facc15,0 8px 22px rgba(250,204,21,.5)}
+.sh{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;color:#fff;font-weight:700;background:linear-gradient(90deg,var(--c1),var(--c2))}
+.sh small{opacity:.9;font-weight:500}
+.sh .num{background:rgba(255,255,255,.25);border-radius:20px;padding:2px 10px;margin-inline-end:8px}
+.tk{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:12px;direction:ltr}
+.tk div{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--cell);font-weight:700;font-size:clamp(11px,3.4vw,17px)}
+.tk div.m{--h:0;color:#2a1f3d;background:radial-gradient(circle at 32% 26%,hsl(var(--h) 95% 78%),hsl(var(--h) 85% 52%) 60%,hsl(var(--h) 85% 36%));box-shadow:0 2px 4px rgba(0,0,0,.3);animation:pop .4s}
+.over{position:fixed;inset:0;background:rgba(20,10,40,.75);display:none;align-items:center;justify-content:center;padding:20px;z-index:9;overflow:hidden}
+.over.show{display:flex}
+.over .in{background:var(--card);border-radius:24px;padding:28px 22px;text-align:center;max-width:380px;width:100%;position:relative;z-index:2;animation:pop .6s;max-height:92vh;overflow-y:auto}
+.tk div.w{outline:3px solid #facc15;outline-offset:1px}
+.over h2{margin:0 0 6px;font-size:34px;background:linear-gradient(90deg,#f97316,#ec4899);-webkit-background-clip:text;background-clip:text;color:transparent}
+.over p{font-size:24px;margin:10px 0 10px;font-weight:800}
+.cf{position:absolute;top:-20px;width:10px;height:16px;z-index:1;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+body.hl{max-width:1100px;display:grid;grid-template-columns:1fr 1fr;column-gap:14px;align-items:start}
+body.hl h1{grid-column:1/-1;grid-row:1;margin:2px 0 8px;font-size:22px}
+body.hl #addBox{grid-column:1/-1;grid-row:2}
+body.hl .stage{grid-column:1;grid-row:3}
+body.hl .stage+.box{grid-column:2;grid-row:3}
+body.hl .big{width:100px;height:100px;font-size:36px;margin:0 auto 6px}
+body.hl .recent .ball{width:34px;height:34px;font-size:13px}
+body.hl .tk div{font-size:clamp(11px,1.8vw,16px)}
+</style>
+</head>
+<body>
+<button class="menuBtn" onclick="openMenu(true)" aria-label="القائمة">☰</button>
+<button class="menuBtn l" onclick="openSets(true)" aria-label="السيتات">🎟️<span class="bd" id="bd">0</span></button>
+<h1>🎉 لعبة الدمبلة 🎉</h1>
+
+
+
+<div class="box stage">
+  <div class="lbl" id="modeLbl"></div>
+  <div class="lbl" id="totalLbl" style="color:var(--acc)"></div>
+  <div class="ball big empty" id="cur"><i>–</i></div>
+  <div class="recent" id="recent"></div>
+  <div class="hint" id="cnt">أضف السيتات من 🎟️ ثم ابدأ السحب</div>
+  <div class="row" style="justify-content:center">
+    <button id="drawBtn" onclick="draw()">🎱 سحب رقم</button>
+    <button class="sec" id="autoBtn" onclick="toggleAuto()">▶ سحب تلقائي</button>
+    <button class="sec" onclick="openSets(true)">🎟️ السيتات</button>
+  </div>
+  <div id="msgs"></div>
+</div>
+
+<div class="box"><div class="board" id="board"></div></div>
+
+<div class="scrim" id="scrim" onclick="openMenu(false);openSets(false)"></div>
+<div class="drawer left" id="setsDrawer">
+  <h3>🎟️ السيتات</h3>
+  <div id="addBox">
+    <div class="sec-t">💰 سعر السيت</div>
+    <input id="price" type="number" inputmode="decimal" min="0" placeholder="0" style="width:100%" oninput="setPrice(this.value)">
+    <div class="sec-t">➕ إضافة سيت</div>
+    <div class="row">
+      <input id="nm" placeholder="اسم صاحب السيت" maxlength="30">
+      <button onclick="addSet()">+ إضافة</button>
+    </div>
+    <div class="hint" id="addHint">كل سيت يأخذ رقماً تسلسلياً ولوناً خاصاً</div>
+    <div id="totalLbl2" class="lbl" style="color:var(--acc);text-align:center"></div>
+  </div>
+  <div id="sets"></div>
+  <button class="sec full" onclick="openSets(false)">إغلاق</button>
+</div>
+<div class="drawer" id="drawer">
+  <h3>⚙️ القائمة</h3>
+  <div id="setBox">
+    <div class="sec-t">نوع اللعبة</div>
+    <div class="seg"><button id="m_row" onclick="setMode('row')">🥇 سطر واحد</button><button id="m_full" class="on" onclick="setMode('full')">🏆 سيت كامل</button></div>
+    <div class="sec-t">⏱ وقت السحب (ثانية)</div>
+    <input id="secs" type="number" inputmode="numeric" min="2" max="120" value="7" style="width:100%" onchange="setSecs(this.value)">
+    <div class="row" style="margin-top:8px"><button class="sec" onclick="setSecs(3)">٣</button><button class="sec" onclick="setSecs(5)">٥</button><button class="sec" onclick="setSecs(7)">٧</button><button class="sec" onclick="setSecs(10)">١٠</button><button class="sec" onclick="setSecs(15)">١٥</button><button class="sec" onclick="setSecs(30)">٣٠</button></div>
+  </div>
+  <button class="sec full" id="sndBtn" onclick="toggleSnd()">🔊 الصوت</button>
+  <button class="full" onclick="resetGame()">↻ لعبة جديدة</button>
+  <button class="sec full" onclick="openMenu(false)">إغلاق</button>
+</div>
+
+<div class="over" id="over"><div class="in">
+  <h2 id="wt">🏆 دمبلة!</h2>
+  <div class="hint">الفائز</div>
+  <p id="wn"></p>
+  <div class="hint" id="prize" style="font-size:20px;font-weight:700;color:var(--acc)"></div>
+  <div id="confirmBox" style="margin:10px 0;text-align:right"></div>
+  <div class="row" style="justify-content:center"><button id="confBtn" onclick="showConfirm()">✅ تأكيد</button><button class="sec" onclick="document.getElementById('over').classList.remove('show')">إغلاق</button></div>
+</div></div>
+
+<script>
+var sets=[],drawn=[],serial=0,rowDone=false,finished=false,timer=null,mode='full',snd=true,secs=7,cd=7,price=0;
+var HUES=[0,28,48,130,172,210,240,275,320];
+var PAL=[['#7c3aed','#ec4899'],['#0ea5e9','#22c55e'],['#f97316','#ef4444'],['#14b8a6','#3b82f6'],['#eab308','#f97316'],['#d946ef','#6366f1']];
+function hue(n){return HUES[Math.min(8,Math.floor(n/10))]}
+function rnd(n){return Math.floor(Math.random()*n)}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=rnd(i+1),t=a[i];a[i]=a[j];a[j]=t}return a}
+function rd(x){return Math.round(x*100)/100}
+function total(){return rd(price*sets.length)}
+
+function openMenu(o){document.getElementById('drawer').classList.toggle('open',o);if(o)document.getElementById('setsDrawer').classList.remove('open');document.getElementById('scrim').classList.toggle('show',o)}
+function openSets(o){document.getElementById('setsDrawer').classList.toggle('open',o);if(o)document.getElementById('drawer').classList.remove('open');document.getElementById('scrim').classList.toggle('show',o)}
+function setMode(m){if(drawn.length)return;mode=m;render()}
+function setPrice(v){v=parseFloat(v);price=isNaN(v)||v<0?0:v;render()}
+function setSecs(v){v=parseInt(v,10);if(isNaN(v))v=7;v=Math.max(2,Math.min(120,v));secs=v;cd=v;document.getElementById('secs').value=v}
+function speak(t){
+  if(!snd||!window.speechSynthesis)return;
+  try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='ar-SA';u.rate=.85;speechSynthesis.speak(u)}catch(e){}
+}
+function toggleSnd(){
+  snd=!snd;if(!snd&&window.speechSynthesis)speechSynthesis.cancel();
+  document.getElementById('sndBtn').textContent=snd?'🔊 الصوت':'🔇 صامت';
+}
+
+function genTicket(){
+  var pool=[];for(var n=1;n<=90;n++)pool.push(n);
+  var p=shuffle(pool).slice(0,15).sort(function(a,b){return a-b});
+  return [p.slice(0,5),p.slice(5,10),p.slice(10,15)];
+}
+function addSet(){
+  if(drawn.length)return;
+  var el=document.getElementById('nm'),name=el.value.trim();
+  if(!name){el.focus();return}
+  serial++;
+  sets.push({id:serial,name:name,pal:PAL[(serial-1)%PAL.length],rows:genTicket()});
+  el.value='';render();
+  document.getElementById('addHint').textContent='✅ تمت إضافة سيت #'+serial+' — '+name;
+}
+document.getElementById('nm').addEventListener('keydown',function(e){if(e.key==='Enter')addSet()});
+function delSet(id){if(drawn.length)return;sets=sets.filter(function(s){return s.id!==id});sets.forEach(function(s,i){s.id=i+1;s.pal=PAL[i%PAL.length]});serial=sets.length;render()}
+
+function isRowFull(row){return row.every(function(n){return drawn.indexOf(n)>-1})}
+function left(s){var c=0;s.rows.forEach(function(r){r.forEach(function(n){if(drawn.indexOf(n)<0)c++})});return c}
+function won(s){return mode==='row'?s.rows.some(isRowFull):left(s)===0}
+function say(t){var d=document.createElement('div');d.className='msg';d.textContent=t;var m=document.getElementById('msgs');m.insertBefore(d,m.firstChild)}
+
+function draw(){
+  if(finished)return;
+  if(!sets.length){say('أضف سيتاً واحداً على الأقل أولاً');stopAuto();return}
+  if(drawn.length>=90){stopAuto();return}
+  var n;do{n=1+rnd(90)}while(drawn.indexOf(n)>-1);
+  drawn.push(n);
+  var c=document.getElementById('cur');
+  c.className='ball big';c.style.setProperty('--h',hue(n));c.innerHTML='<i>'+n+'</i>';
+  void c.offsetWidth;c.classList.add('pop');
+  document.getElementById('cnt').textContent='خرج '+drawn.length+' من 90';
+  cd=secs;
+  speak('الرقم '+n);
+  check();render();
+}
+
+function check(){
+  var winners=sets.filter(won);
+  if(winners.length){
+    finished=true;stopAuto();
+    document.getElementById('drawBtn').disabled=true;
+    var txt=winners.map(function(s){return s.name+' (سيت رقم '+s.id+')'}).join(' + ');
+    setTimeout(function(){
+      if(!finished)return;
+      document.getElementById('wn').textContent=txt;
+      document.getElementById('wt').textContent=mode==='row'?'🏆 سطر!':'🏆 دمبلة!';
+      document.getElementById('over').classList.add('show');
+      lastWinners=winners;document.getElementById('confirmBox').innerHTML='';document.getElementById('confBtn').style.display='';
+      document.getElementById('prize').textContent=price>0?(winners.length>1?'الجائزة لكل فائز: '+rd(total()/winners.length)+' (من مجموع '+total()+')':'💰 المجموع الكلي: '+total()):'';
+      confetti();
+      say('🏆 الفائز '+(mode==='row'?'بالسطر':'بالدمبلة')+': '+txt);
+      speak('مبروك '+winners[0].name);
+    },2800);
+    return;
+  }
+  if(!rowDone&&mode==='full'){
+    var rw=sets.filter(function(s){return s.rows.some(isRowFull)});
+    if(rw.length){
+      rowDone=true;
+      say('🥇 أول سطر كامل: '+rw.map(function(s){return s.name+' (سيت '+s.id+')'}).join(' + '));
+    }
+  }
+}
+
+var lastWinners=[];
+function ticketHtml(s){
+  var cells='';
+  s.rows.forEach(function(row){
+    var full=mode==='row'&&isRowFull(row);
+    row.forEach(function(n){
+      cells+=drawn.indexOf(n)>-1?'<div class="m'+(full?' w':'')+'" style="--h:'+hue(n)+'">'+n+'</div>':'<div>'+n+'</div>';
+    });
+  });
+  return '<div class="set" style="--c1:'+s.pal[0]+';--c2:'+s.pal[1]+'"><div class="sh"><span><span class="num">#'+s.id+'</span>'+esc(s.name)+'</span><small>'+(mode==='row'?'سطر كامل':'كل الأرقام خرجت')+'</small></div><div class="tk">'+cells+'</div></div>';
+}
+function showConfirm(){
+  document.getElementById('confirmBox').innerHTML=lastWinners.map(ticketHtml).join('');
+  document.getElementById('confBtn').style.display='none';
+}
+function confetti(){
+  var o=document.getElementById('over'),cols=['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#a855f7','#ec4899'];
+  for(var i=0;i<70;i++){
+    var d=document.createElement('div');d.className='cf';
+    d.style.left=rnd(100)+'%';d.style.background=cols[rnd(cols.length)];
+    d.style.animationDuration=(2+Math.random()*2.5)+'s';d.style.animationDelay=(Math.random()*1.2)+'s';
+    o.appendChild(d);
+    setTimeout(function(e){return function(){e.remove()}}(d),6000);
+  }
+}
+
+function tick(){
+  if(finished){stopAuto();return}
+  cd--;
+  if(cd<=0){draw();return}
+  document.getElementById('cnt').textContent='خرج '+drawn.length+' من 90 • التالي بعد '+cd+' ث';
+}
+function toggleAuto(){
+  if(timer){stopAuto();return}
+  if(finished)return;
+  if(!sets.length){say('أضف سيتاً واحداً على الأقل أولاً');return}
+  draw();timer=setInterval(tick,1000);
+  document.getElementById('autoBtn').textContent='⏸ إيقاف';
+}
+function stopAuto(){
+  if(timer){clearInterval(timer);timer=null}
+  document.getElementById('autoBtn').textContent='▶ سحب تلقائي';
+}
+
+function resetGame(){
+  stopAuto();drawn=[];rowDone=false;finished=false;
+  sets=[];serial=0;
+  var c=document.getElementById('cur');c.className='ball big empty';c.innerHTML='<i>–</i>';
+  document.getElementById('cnt').textContent='أضف السيتات من 🎟️ ثم ابدأ السحب';
+  document.getElementById('msgs').innerHTML='';
+  document.getElementById('drawBtn').disabled=false;
+  document.getElementById('over').classList.remove('show');
+  openMenu(false);render();
+}
+
+function render(){
+  var b='';
+  for(var i=1;i<=90;i++)b+='<div class="ball'+(drawn.indexOf(i)>-1?' on':'')+'" style="--h:'+hue(i)+'">'+i+'</div>';
+  document.getElementById('board').innerHTML=b;
+  var r='';
+  drawn.slice(-6,-1).reverse().forEach(function(n){r+='<div class="ball" style="--h:'+hue(n)+'"><i>'+n+'</i></div>'});
+  document.getElementById('recent').innerHTML=r;
+  var started=drawn.length>0;
+  document.getElementById('addBox').style.display=started?'none':'block';
+  document.getElementById('setBox').style.display=started?'none':'block';
+  document.getElementById('m_row').className=mode==='row'?'on':'';
+  document.getElementById('m_full').className=mode==='full'?'on':'';
+  document.getElementById('modeLbl').textContent=mode==='row'?'🥇 اللعبة: أول سطر كامل يفوز':'🏆 اللعبة: أول سيت كامل يفوز';
+  document.getElementById('totalLbl').textContent=price>0&&sets.length&&!started?'💰 سعر السيت '+price+' × '+sets.length+' سيت = المجموع الكلي: '+total():'';
+  document.getElementById('totalLbl2').textContent=document.getElementById('totalLbl').textContent;
+  var h='';
+  sets.forEach(function(s){
+    var l=left(s),cells='';
+    s.rows.forEach(function(row){row.forEach(function(n){
+      if(drawn.indexOf(n)>-1)cells+='<div class="m" style="--h:'+hue(n)+'">'+n+'</div>';
+      else cells+='<div>'+n+'</div>';
+    })});
+    h+='<div class="set'+(won(s)?' win':'')+'" style="--c1:'+s.pal[0]+';--c2:'+s.pal[1]+'"><div class="sh"><span><span class="num">#'+s.id+'</span>'+esc(s.name)+'</span><span><small>باقي '+l+'</small>'+(started?'':' <button class="x" onclick="delSet('+s.id+')">✕</button>')+'</span></div><div class="tk">'+cells+'</div></div>';
+  });
+  document.getElementById('sets').innerHTML=h;
+  document.getElementById('bd').textContent=sets.length;
+}
+function esc(t){return t.replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+function applyLay(){
+  var h=window.matchMedia('(orientation:landscape) and (min-width:640px)').matches;
+  document.body.classList.toggle('hl',h);
+}
+window.addEventListener('resize',applyLay);
+['gesturestart','gesturechange','gestureend'].forEach(function(g){document.addEventListener(g,function(e){e.preventDefault()})});
+applyLay();
+render();
+</script>
+</body>
+</html>
