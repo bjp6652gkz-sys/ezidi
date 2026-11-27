@@ -530,7 +530,7 @@ function tool(k){
 async function claim(i){try{await upd({done:FV.arrayUnion(i),xp:FV.increment(TASKS[i][1])});toast('تم الاستلام');tool(2)}catch(e){toast(authErr(e.code))}}
 async function setFam(v){if(v!==null&&!v)return toast('اكتب اسم العائلة');try{await upd({family:v||''});tool(3)}catch(e){toast(authErr(e.code))}}
 async function verify(a){try{await upd({['ver.'+a]:1});toast('أُرسل الطلب للمراجعة');tool(4)}catch(e){toast(authErr(e.code))}}
-async function invite(){const u=$('#lk').value;try{if(navigator.share){await navigator.share({title:'صدى',url:u});return}}catch(e){}try{await navigator.clipboard.writeText(u)}catch(e){}toast('تم نسخ الرابط')}
+async function invite(){const u=$('#lk').value;try{if(navigator.share){await navigator.share({title:'دردشة صوتية',url:u});return}}catch(e){}try{await navigator.clipboard.writeText(u)}catch(e){}toast('تم نسخ الرابط')}
 async function support(x){if(!x)return toast('اكتب رسالتك');try{await db.collection('support').add({uid:U.uid,name:me.name,x,at:Date.now()});closeSheet();toast('وصلت رسالتك، سنرد قريباً')}catch(e){toast(authErr(e.code))}}
 
 /* ===== الاقتصاد: كوينز ← هدية ← ألماس ← كوينز ===== */
